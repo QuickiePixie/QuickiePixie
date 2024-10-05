@@ -26,30 +26,11 @@ addOnUISdk.ready.then(async () => {
   const pixelSize = canvasWidth / gridSize;
 
   const canvasSettings = {
-    brush: "line",
-    brushStart: [0, 0],
+    brush: "free",
+    brushStart: [0,0],
     currentColor: "black",
     isDrawing: false,
-  };
-
-  document.getElementById("pen-tool").addEventListener("click", () => {
-    canvasSettings.brush = "free";
-  });
-
-  document.getElementById("eraser-tool").addEventListener("click", () => {
-    canvasSettings.brush = "free";
-    canvasSettings.currentColor = "rgba(0, 0, 0, 1)";
-    console.log("Eraser selected");
-  });
-
-  document.getElementById("fill-tool").addEventListener("click", () => {
-    canvasSettings.brush = "fill";
-    console.log("Fill selected");
-  });
-
-  document.getElementById("line-tool").addEventListener("click", () => {
-    canvasSettings.brush = "line";
-  });
+  }
 
   canvas.addEventListener("mousedown", (event) => {
     if (canvasSettings.brush == "line") {
@@ -72,9 +53,8 @@ addOnUISdk.ready.then(async () => {
     if (canvasSettings.brush == "free") drawPixel(event);
   });
 
-  canvas.addEventListener("mouseup", () => {
+  canvas.addEventListener("mouseup", (event) => {
     if (canvasSettings.brush == "line") {
-      console.log("ENDING LINE");
       endLine(event);
     }
     canvasSettings.isDrawing = false;
@@ -149,46 +129,45 @@ addOnUISdk.ready.then(async () => {
 
   function startLine(event) {
     const rect = canvas.getBoundingClientRect();
-    const x =
-      Math.floor((event.clientX - rect.left) / pixelSize) * screenScaling;
-    const y =
-      Math.floor((event.clientY - rect.top) / pixelSize) * screenScaling;
-    canvasSettings.brushStart = [x, y];
+    const x = Math.floor((event.clientX - rect.left)/pixelSize);
+    const y = Math.floor((event.clientY - rect.top)/pixelSize);
+    canvasSettings.brushStart = [x,y];
   }
 
   function endLine(event) {
     const rect = canvas.getBoundingClientRect();
-    const x =
-      Math.floor((event.clientX - rect.left) / pixelSize) * screenScaling;
-    const y =
-      Math.floor((event.clientY - rect.top) / pixelSize) * screenScaling;
+    const x = Math.floor((event.clientX - rect.left)/pixelSize);
+    const y = Math.floor((event.clientY - rect.top)/pixelSize);
     const startX = canvasSettings.brushStart[0];
     const startY = canvasSettings.brushStart[1];
 
-    let curX = startX;
-    let curY = startY;
-
-    while (curX !== x || curY !== y) {
-      console.log(`Curx: ${curX}, Cury: ${curY}`);
-      const maxDist = Math.max(Math.abs(curX - x), Math.abs(curY - y));
-      const xStep = (x - curX) / maxDist;
-      const yStep = (y - curY) / maxDist;
-
-      if (curX != x) curX += xStep;
-      if (curY != y) curY += yStep;
-      console.log(`xStep: ${xStep} yStep: ${yStep}`);
-
-      curX = Math.floor(curX);
-      curY = Math.floor(curY);
-
+    let curX;
+    let curY;
+    
+    let fullSlope = 0;
+    if (x != startX && y != startY)
+      fullSlope = (y-startY)/(x - startX);
+    else if (x == startX)
+      fullSlope = y-startY;
+    else
+      fullSlope = 0;
+    const x0 = Math.min(startX, x);
+    const x1 = Math.max(startX, x);
+    curY = (x0 == startX ? startY : y) + 0.5;
+    for (let i = x0; i <= x1; i += 1) {
+      curX = i;
+      curY += x0 == startX ? fullSlope : fullSlope;
       context.fillStyle = canvasSettings.currentColor;
-      context.fillRect(
-        curX * pixelSize,
-        curY * pixelSize,
-        pixelSize * screenScaling,
-        pixelSize * screenScaling
-      );
+      const drawX = curX * screenScaling;
+      for (let j = 0; j <= Math.abs(fullSlope); j++) {
+        const drawY = (Math.floor(curY -j*Math.sign(fullSlope)))
+        if (drawY >= Math.min(startY, y) && drawY <= Math.max(y, startY))
+          context.fillRect(drawX*pixelSize,drawY * screenScaling * pixelSize, pixelSize * screenScaling, pixelSize * screenScaling);    
+        else
+          break  
+      }
     }
+    
   }
 
   /*
@@ -204,5 +183,78 @@ addOnUISdk.ready.then(async () => {
   // 1. `addOnUISdk` is ready,
   // 2. `sandboxProxy` is available, and
   // 3. `click` event listener is registered.
-  createRectangleButton.disabled = false;
+
+    
+    const penButton = document.getElementById("penBtn");
+    penButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        penButton.classList.add("active-btn");
+
+        // call pen tool
+        canvasSettings.brush = "free";
+    })
+
+    const lineButton = document.getElementById("lineBtn");
+    lineButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        lineButton.classList.add("active-btn");
+
+        // call pen tool
+        canvasSettings.brush = "line";
+    })
+
+    const eraseButton = document.getElementById("eraseBtn");
+    eraseButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        eraseButton.classList.add("active-btn");
+
+        // call erase tool
+        canvasSettings.brush = "erase";
+    })
+
+    const bucketButton = document.getElementById("bucketBtn");
+    bucketButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        bucketButton.classList.add("active-btn");
+
+        // call bucket tool
+        canvasSettings.brush = "fill";
+    })
+
+    const colorPicker = document.getElementById("colorPicker");
+    colorPicker.addEventListener("change", async (e) => {
+        console.log(e.target.value);
+        //call colour function
+        canvasSettings.currentColor = e.target.value;
+    })
+
+    // Enable the button only when:
+    // 1. `addOnUISdk` is ready,
+    // 2. `sandboxProxy` is available, and
+    // 3. `click` event listener is registered.
+    createRectangleButton.disabled = false;
 });
