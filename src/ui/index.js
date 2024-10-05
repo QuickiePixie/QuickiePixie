@@ -15,6 +15,54 @@ addOnUISdk.ready.then(async () => {
     createRectangleButton.addEventListener("click", async event => {
         await sandboxProxy.createRectangle();
     });
+    
+    const penButton = document.getElementById("penBtn");
+    penButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        penButton.classList.add("active-btn");
+
+        // call pen tool
+    })
+
+    const eraseButton = document.getElementById("eraseBtn");
+    eraseButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        eraseButton.classList.add("active-btn");
+
+        // call erase tool
+    })
+
+    const bucketButton = document.getElementById("bucketBtn");
+    bucketButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        bucketButton.classList.add("active-btn");
+
+        // call bucket tool
+    })
+
+    const colorPicker = document.getElementById("colorPicker");
+    colorPicker.addEventListener("change", async (e) => {
+        console.log(e.target.value);
+        //call colour function
+    })
 
     // Enable the button only when:
     // 1. `addOnUISdk` is ready,
