@@ -31,24 +31,6 @@ addOnUISdk.ready.then(async () => {
     currentColor: "black",
     isDrawing: false,
   }
-  
-  document.getElementById('pen-tool').addEventListener('click', () => {
-    canvasSettings.brush = 'free';
-  });
-
-  document.getElementById('eraser-tool').addEventListener('click', () => {
-    canvasSettings.brush = 'free';
-    canvasSettings.currentColor = "rgba(0, 0, 0, 1)";
-    console.log("Eraser selected");
-  });
-  
-  document.getElementById('fill-tool').addEventListener('click', () => {
-    canvasSettings.brush = 'fill';
-  });
-  
-  document.getElementById('line-tool').addEventListener('click', () => {
-    canvasSettings.brush = 'line';
-  });
 
   canvas.addEventListener("mousedown", (event) => {
     if (canvasSettings.brush == "line") {
@@ -168,6 +150,22 @@ addOnUISdk.ready.then(async () => {
         penButton.classList.add("active-btn");
 
         // call pen tool
+        canvasSettings.brush = "free";
+    })
+
+    const lineButton = document.getElementById("lineBtn");
+    lineButton.addEventListener("click", async (e) => {
+        let toolBtns = Array.from(document.getElementsByClassName("tool-btn"));
+        toolBtns.forEach(element => {
+            console.log(element.id)
+            if (element.id != e.target.id && element.classList.contains("active-btn")) {
+                element.classList.remove("active-btn");
+            }
+        });
+        lineButton.classList.add("active-btn");
+
+        // call pen tool
+        canvasSettings.brush = "line";
     })
 
     const eraseButton = document.getElementById("eraseBtn");
@@ -182,6 +180,7 @@ addOnUISdk.ready.then(async () => {
         eraseButton.classList.add("active-btn");
 
         // call erase tool
+        canvasSettings.brush = "erase";
     })
 
     const bucketButton = document.getElementById("bucketBtn");
@@ -196,12 +195,14 @@ addOnUISdk.ready.then(async () => {
         bucketButton.classList.add("active-btn");
 
         // call bucket tool
+        canvasSettings.brush = "fill";
     })
 
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.addEventListener("change", async (e) => {
         console.log(e.target.value);
         //call colour function
+        canvasSettings.currentColor = e.target.value;
     })
 
     // Enable the button only when:
