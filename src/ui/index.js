@@ -5,10 +5,7 @@ addOnUISdk.ready.then(async () => {
 
   // Get the UI runtime.
   const { runtime } = addOnUISdk.instance;
-
-  // Get the proxy object, which is required
-  // to call the APIs defined in the Document Sandbox runtime
-  // i.e., in the `code.js` file of this add-on.
+  
   const sandboxProxy = await runtime.apiProxy("documentSandbox");
 
   /*
@@ -202,6 +199,7 @@ addOnUISdk.ready.then(async () => {
             })
                 .then(response => response.json())
                 .then(data => {
+                    data = data.charAt(0).toUpperCase() + data.slice(1) + ".";
                     descriptionText.innerHTML = data;
                     descriptionText.hidden = false;
                 })        
@@ -287,10 +285,6 @@ addOnUISdk.ready.then(async () => {
     canvasSettings.currentColor = e.target.value;
   });
 
-    // Enable the button only when:
-    // 1. `addOnUISdk` is ready,
-    // 2. `sandboxProxy` is available, and
-    // 3. `click` event listener is registered.
     const createImageButton = document.getElementById("addToPage");
     createImageButton.addEventListener("click", async () => {
       const canvas = document.getElementById("pixel-canvas");
