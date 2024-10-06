@@ -193,7 +193,7 @@ addOnUISdk.ready.then(async () => {
         canvas.toBlob(async (imageBlob) => {
             const formData = new FormData();
             formData.append("image", imageBlob);
-            fetch(`http://localhost:3000/`, {
+            fetch(`https://imageanalyzer-be03.onrender.com/`, {
                 method: 'POST',
                 body: formData,
             })
@@ -294,20 +294,28 @@ addOnUISdk.ready.then(async () => {
     });
     createImageButton.disabled = false;
 
-    /**
+    
     const downloadImageButton = document.getElementById("downloadImage");
     downloadImageButton.addEventListener("click", async () => {
       const canvas = document.getElementById("pixel-canvas");
       const link = document.createElement('a');
       link.download = 'quickiepixie.png';
       console.log("IN DOWNLOAD")
+      const formData = new FormData();
       canvas.toBlob(async (imageBlob) => {
-        link.href = canvas.toDataURL();
-        console.log("DOWNLOADING")
-        link.click();
-        console.log("DOWNLOADED")
+        formData.append("image", imageBlob)
+        fetch(`https://imageanalyzer-be03.onrender.com/image`, {
+          method: "POST",
+          body: formData
+        }).then(res => res.json())
+        .then(data =>{
+          const id = data.id;
+          const elmt = document.getElementById("downloadText");
+          elmt.hidden=false;
+          elmt.innerText = `External Link: https://quickie-pixie-docs.vercel.app/image/${id}`;
+        })
       });
     });
-    downloadImageButton.disabled = false;**/
+    downloadImageButton.disabled = false;
     createDescriptionButton.disabled = false;
 });
