@@ -12,7 +12,7 @@
         <title>Get Started</title>
         <style>
             .container {
-                margin: 24px;
+                padding: 14px;
                 display: flex;
                 flex-direction: column;
             }
@@ -42,8 +42,9 @@
             }
 
             .pixel-grid {
-                width:96%;
+                width:100%;
                 height:auto;
+                margin:auto;
             }
 
             .icon {
@@ -103,8 +104,21 @@
             }
 
             #createRectangle {
-                width: 90%;
+                width: 80%;
                 height: 32px;
+                display: flex;
+                margin:auto;
+            }
+
+            .btn-toolbar {
+                margin-bottom: 16px;
+                margin: auto;
+                display: block;
+            }
+
+            .btn-group {
+                display: flex;
+                margin:0px;
             }
              
         </style>
@@ -115,8 +129,8 @@
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
         <div class="container">
-            <div class="row">
-                <div class="btn-toolbar justify-content-between col" role="toolbar" aria-label="Toolbar with button groups">
+            <div>
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group" role="group" aria-label="First group">
                       <button id="penBtn" type="button" class="btn btn-outline tool-btn">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen icon" viewBox="0 0 16 16">
@@ -141,18 +155,19 @@
                       <div id="colorInput">
                         <input type="color" id="colorPicker" class="toolbar" value="#000000">
                       </div>
+                      <div>
                         <select name="size" id="gridSize" class="toolbar">
-                            <option value="16">16 x 16</option>
-                            <option value="32">32 x 32</option>
-                            <option value="64">64 x 64</option>
-                            <option value="128">128 x 128</option>
+                            <option value="128">S</option>
+                            <option value="64">M</option>
+                            <option value="32">L</option>
+                            <option value="16">XL</option>
                           </select>
+                          </div>
                     </div>
             </div>
             <div class="pixel-grid">
                 <canvas id="pixel-canvas" class="pixel-grid" width="512" height="512"> </canvas>
             </div>
-            <div id="description"></div>
             <button id="createRectangle" disabled>Create Rectangle</button>
         </div>
 

@@ -19,11 +19,11 @@ addOnUISdk.ready.then(async () => {
   const context = canvas.getContext("2d");
 
   //define grid size and pixel size
-  const gridSize = 32;
+  let gridSize = 128;
   const canvasWidth = canvas.getBoundingClientRect().width;
   const canvasHeight = canvas.getBoundingClientRect().height;
   const screenScaling = canvas.width / canvasWidth;
-  const pixelSize = canvasWidth / gridSize;
+  let pixelSize = canvasWidth / gridSize;
 
   const canvasSettings = {
     brush: "free",
@@ -59,6 +59,13 @@ addOnUISdk.ready.then(async () => {
     }
     canvasSettings.isDrawing = false;
     context.beginPath();
+  });
+
+  let gridDropDown = document.getElementById("gridSize");
+  gridDropDown.addEventListener("change", (event) => {
+    gridSize = parseInt(event.target.value);
+    pixelSize = canvasWidth / gridSize;
+    console.log(gridSize);
   });
 
   function drawPixel(event) {
