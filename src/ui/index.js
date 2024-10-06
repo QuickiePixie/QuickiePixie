@@ -190,6 +190,7 @@ addOnUISdk.ready.then(async () => {
   const createDescriptionButton = document.getElementById("createDescription");
   const descriptionText = document.getElementById("descriptionText");
     createDescriptionButton.addEventListener("click", async event => {
+        createDescriptionButton.disabled = true;
         canvas.toBlob(async (imageBlob) => {
             const formData = new FormData();
             formData.append("image", imageBlob);
@@ -202,6 +203,8 @@ addOnUISdk.ready.then(async () => {
                     data = data.charAt(0).toUpperCase() + data.slice(1) + ".";
                     descriptionText.innerHTML = data;
                     descriptionText.hidden = false;
+                }).finally(() => {
+                  createDescriptionButton.disabled = false;
                 })        
         }); 
     });
@@ -297,6 +300,7 @@ addOnUISdk.ready.then(async () => {
     
     const downloadImageButton = document.getElementById("downloadImage");
     downloadImageButton.addEventListener("click", async () => {
+      downloadImageButton.disabled=true;
       const canvas = document.getElementById("pixel-canvas");
       const link = document.createElement('a');
       link.download = 'quickiepixie.png';
@@ -312,7 +316,10 @@ addOnUISdk.ready.then(async () => {
           const id = data.id;
           const elmt = document.getElementById("downloadText");
           elmt.hidden=false;
+          downloadImageButton.classList.remove("visible");
           elmt.innerText = `External Link: https://quickie-pixie-docs.vercel.app/image/${id}`;
+        }).finally(() => {
+          downloadImageButton.disabled=false;
         })
       });
     });
