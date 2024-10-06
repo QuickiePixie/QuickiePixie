@@ -279,4 +279,20 @@ addOnUISdk.ready.then(async () => {
       });
     });
     createImageButton.disabled = false;
+
+    /**
+    const downloadImageButton = document.getElementById("downloadImage");
+    downloadImageButton.addEventListener("click", async () => {
+      const canvas = document.getElementById("pixel-canvas");
+      const link = document.createElement('a');
+      link.download = 'quickiepixie.png';
+      console.log("IN DOWNLOAD")
+      canvas.toBlob(async (imageBlob) => {
+        link.href = canvas.toDataURL();
+        console.log("DOWNLOADING")
+        link.click();
+        console.log("DOWNLOADED")
+      });
+    });
+    downloadImageButton.disabled = false;**/
 });
