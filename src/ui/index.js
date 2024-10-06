@@ -183,10 +183,23 @@ addOnUISdk.ready.then(async () => {
    ************************************************************
    */
 
-  // Enable the button only when:
-  // 1. `addOnUISdk` is ready,
-  // 2. `sandboxProxy` is available, and
-  // 3. `click` event listener is registered.
+  const createDescriptionButton = document.getElementById("createDescription");
+  const descriptionText = document.getElementById("descriptionText");
+    createDescriptionButton.addEventListener("click", async event => {
+        canvas.toBlob(async (imageBlob) => {
+            const formData = new FormData();
+            formData.append("image", imageBlob);
+            fetch(`http://localhost:3000/`, {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    descriptionText.innerHTML = data;
+                    descriptionText.hidden = false;
+                })        
+        }); 
+    });
 
   const penButton = document.getElementById("penBtn");
   penButton.addEventListener("click", async (e) => {
@@ -295,4 +308,5 @@ addOnUISdk.ready.then(async () => {
       });
     });
     downloadImageButton.disabled = false;**/
+    createDescriptionButton.disabled = false;
 });
