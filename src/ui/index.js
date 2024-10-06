@@ -104,12 +104,9 @@ addOnUISdk.ready.then(async () => {
     const newColor = canvasSettings.currentColor;
 
     while(stack.length > 0){
-        console.log("stack entering the loop", JSON.stringify(stack));
         const [curX, curY] = stack.pop();
         if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize) continue;
         const currColor = colorPick(curX, curY);
-        console.log(`Current color: ${currColor}, Previous color: ${prevColor}`);
-        console.log(typeof currColor, typeof prevColor);
         if (colorMatch(currColor, prevColor)) {
             context.fillStyle = newColor;
             context.fillRect(
@@ -123,7 +120,6 @@ addOnUISdk.ready.then(async () => {
             stack.push([curX, curY+1]);
             stack.push([curX, curY-1]);
         }
-        console.log("stack leaving the loop", JSON.stringify(stack));
     }
   }
 
@@ -173,11 +169,6 @@ addOnUISdk.ready.then(async () => {
   /*
    ************************************************************
    */
-
-  const createRectangleButton = document.getElementById("createRectangle");
-  createRectangleButton.addEventListener("click", async (event) => {
-    await sandboxProxy.createRectangle();
-  });
 
   // Enable the button only when:
   // 1. `addOnUISdk` is ready,
@@ -256,5 +247,12 @@ addOnUISdk.ready.then(async () => {
     // 1. `addOnUISdk` is ready,
     // 2. `sandboxProxy` is available, and
     // 3. `click` event listener is registered.
-    createRectangleButton.disabled = false;
+    const createImageButton = document.getElementById("addToPage");
+    createImageButton.addEventListener("click", async () => {
+      const canvas = document.getElementById("pixel-canvas");
+      canvas.toBlob(async (imageBlob) => {
+        await sandboxProxy.createPixelImage(imageBlob);
+      });
+    });
+    createImageButton.disabled = false;
 });
