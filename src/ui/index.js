@@ -24,7 +24,7 @@ addOnUISdk.ready.then(async () => {
   const canvasSettings = {
     brush: "free",
     brushStart: [0, 0],
-    currentColor: "black",
+    currentColor: document.getElementById("colorPicker").value,
     isDrawing: false,
     isErasing: false,
   };
@@ -36,6 +36,7 @@ addOnUISdk.ready.then(async () => {
     } else if (canvasSettings.brush == "fill") {
       console.log("FILLING");
       const rect = canvas.getBoundingClientRect();
+      console.log(rect);
       const x = Math.floor((event.clientX - rect.left) / pixelSize);
       const y = Math.floor((event.clientY - rect.top) / pixelSize);
       const prevColor = colorPick(x, y);
@@ -99,7 +100,10 @@ addOnUISdk.ready.then(async () => {
     }
   }
 
+  // const pixelArray = new Array(gridSize * gridSize);
+  
   function colorPick(x, y) {
+    // return pixelArray[y * gridSize + x]
     const pixelData = context.getImageData(
       x * pixelSize * screenScaling + 1,
       y * pixelSize * screenScaling + 1,
@@ -113,16 +117,22 @@ addOnUISdk.ready.then(async () => {
     return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
   }
 
-  function fill(x, y, prevColor) {
+  async function fill(x, y, prevColor) {
     console.log(`Filling at (${x}, ${y})`);
 
     let stack = [[x, y]];
-    console.log("stack", JSON.stringify(stack));
+    const visited = new Uint8Array(gridSize * gridSize);
     const newColor = canvasSettings.currentColor;
+    const newColorRGBA = convertToRgba(newColor);
+    if (colorMatch(prevColor, newColorRGBA)) return;
+    console.log("Filling in new color");
 
     while(stack.length > 0){
         const [curX, curY] = stack.pop();
-        if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize) continue;
+        if (visited[curY * gridSize + curX]===1) {
+          console.log(`Already visited (${curX}, ${curY})`);
+        }
+        if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize || visited[curY * gridSize + curX]===1) continue;
         const currColor = colorPick(curX, curY);
         if (colorMatch(currColor, prevColor)) {
             context.fillStyle = newColor;
@@ -132,6 +142,7 @@ addOnUISdk.ready.then(async () => {
                 pixelSize * screenScaling,
                 pixelSize * screenScaling
               );
+            visited[curY * gridSize + curX] = 1;
             stack.push([curX+1, curY]);
             stack.push([curX-1, curY]);
             stack.push([curX, curY+1]);
@@ -287,6 +298,19 @@ addOnUISdk.ready.then(async () => {
     //call colour function
     canvasSettings.currentColor = e.target.value;
   });
+
+  const convertToRgba = (hex) => {
+    const re = /^#[A-Fa-f0-9]{6}/;
+    if (!re.test(hex)) {
+      console.error(`Invalid Hex String: ${hex}`);
+      throw new Error("Invalid Hex String");
+    }
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    const a = 255;
+    return [r, g, b, a];
+  }
 
     const createImageButton = document.getElementById("addToPage");
     createImageButton.addEventListener("click", async () => {
