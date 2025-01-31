@@ -27,7 +27,9 @@ addOnUISdk.ready.then(async () => {
     currentColor: document.getElementById("colorPicker").value,
     isDrawing: false,
     isErasing: false,
+    pixels: new Uint8Array(gridSize * gridSize * 4)
   };
+
 
   canvas.addEventListener("mousedown", (event) => {
     if (canvasSettings.brush == "line") {
@@ -70,6 +72,21 @@ addOnUISdk.ready.then(async () => {
     console.log(gridSize);
   });
 
+  function setPixel(i,j, r,g,b, a=255) {
+    const idx = 4 *  (j * gridSize + i);
+    canvasSettings.pixels[idx] = r;
+    canvasSettings.pixels[idx + 1] = g;
+    canvasSettings.pixels[idx + 2] = b;
+    canvasSettings.pixels[idx + 3] = a;
+
+  }
+
+  function getPixel(i,j) {
+    const idx = 4 *  (j * gridSize + i);
+    return [canvasSettings.pixels[idx], canvasSettings.pixels[idx + 1], canvasSettings.pixels[idx + 2], canvasSettings.pixels[idx + 3]]
+  }
+
+
   function drawPixel(event) {
     if (!canvasSettings.isDrawing) {
       return;
@@ -89,6 +106,8 @@ addOnUISdk.ready.then(async () => {
         pixelSize * screenScaling,
         pixelSize * screenScaling
       );
+
+      setPixel(x,y, r,g,b);
       console.log("Erasing");
     } else {
       context.fillRect(
@@ -97,6 +116,10 @@ addOnUISdk.ready.then(async () => {
         pixelSize * screenScaling,
         pixelSize * screenScaling
       );
+      const colorRGBA = convertToRgba(canvasSettings.currentColor);
+      console.log("New col")
+      console.log(colorRGBA)
+      setPixel(x,y, colorRGBA[0], colorRGBA[1], colorRGBA[2])
     }
   }
 
@@ -114,7 +137,7 @@ addOnUISdk.ready.then(async () => {
   }
 
   function colorMatch(a, b) {
-    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+    return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
   }
 
   async function fill(x, y, prevColor) {
@@ -126,28 +149,53 @@ addOnUISdk.ready.then(async () => {
     const newColorRGBA = convertToRgba(newColor);
     if (colorMatch(prevColor, newColorRGBA)) return;
     console.log("Filling in new color");
-
+    console.log(newColorRGBA)
     while(stack.length > 0){
         const [curX, curY] = stack.pop();
-        if (visited[curY * gridSize + curX]===1) {
-          console.log(`Already visited (${curX}, ${curY})`);
-        }
         if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize || visited[curY * gridSize + curX]===1) continue;
-        const currColor = colorPick(curX, curY);
+        const currColor = getPixel(curX, curY);//colorPick(curX, curY);
+        //console.log(`Curr colour=${currColor} vs colorPick=${colorPick(curX, curY)} vs prevColor=${prevColor} vs newColour=${newColorRGBA}, colourMatchReturns=${colorMatch(currColor, prevColor)}`);
         if (colorMatch(currColor, prevColor)) {
-            context.fillStyle = newColor;
+            /*context.fillStyle = newColor;
             context.fillRect(
                 curX * pixelSize * screenScaling,
                 curY * pixelSize * screenScaling,
                 pixelSize * screenScaling,
                 pixelSize * screenScaling
-              );
+              );*/
+            setPixel(curX, curY, newColorRGBA[0], newColorRGBA[1], newColorRGBA[2]);
             visited[curY * gridSize + curX] = 1;
             stack.push([curX+1, curY]);
             stack.push([curX-1, curY]);
             stack.push([curX, curY+1]);
             stack.push([curX, curY-1]);
         }
+    }
+    drawPixels();
+  }
+
+  function drawPixels() {
+    console.log(canvasSettings.pixels)
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        const pixel = getPixel(i, j);
+        if (pixel[0] >= 0 && pixel[1] >= 0 && pixel[2] >= 0) {
+          context.fillStyle = `rgb(${pixel[0]},${pixel[1]}, ${pixel[2]}, ${pixel[3]})`;
+          context.fillRect(
+            i * pixelSize * screenScaling,
+            j * pixelSize * screenScaling,
+            pixelSize * screenScaling,
+            pixelSize * screenScaling
+          );
+        } else {
+          context.clearRect(
+            i * pixelSize * screenScaling,
+            j * pixelSize * screenScaling,
+            pixelSize * screenScaling,
+            pixelSize * screenScaling
+          );
+        }
+      }
     }
   }
 
