@@ -15,6 +15,9 @@ addOnUISdk.ready.then(async () => {
   const canvas = document.getElementById("pixel-canvas");
   const context = canvas.getContext("2d");
 
+  const overlayCanvas = document.getElementById("overlay-pixel-canvas");
+  const overlayContext = overlayCanvas.getContext("2d");
+
   //define grid size and pixel size
   let gridSize = 128;
   const canvasWidth = canvas.getBoundingClientRect().width;
@@ -29,9 +32,10 @@ addOnUISdk.ready.then(async () => {
     isErasing: false,
   };
 
-  canvas.addEventListener("mousedown", (event) => {
+  overlayCanvas.addEventListener("mousedown", (event) => {
     if (canvasSettings.brush == "line") {
       startLine(event);
+      canvasSettings.isDrawing = true;
       return;
     } else if (canvasSettings.brush == "fill") {
       console.log("FILLING");
@@ -50,11 +54,12 @@ addOnUISdk.ready.then(async () => {
       drawPixel(event);
   });
 
-  canvas.addEventListener("mousemove", (event) => {
+  overlayCanvas.addEventListener("mousemove", (event) => {
     if (canvasSettings.brush == "free" || canvasSettings.brush === "erase") drawPixel(event);
+    if (canvasSettings.brush == "line") drawLinePreview(event);
   });
 
-  canvas.addEventListener("mouseup", (event) => {
+  overlayCanvas.addEventListener("mouseup", (event) => {
     if (canvasSettings.brush == "line") {
       endLine(event);
     }
@@ -164,36 +169,117 @@ addOnUISdk.ready.then(async () => {
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
     const startX = canvasSettings.brushStart[0];
     const startY = canvasSettings.brushStart[1];
+    drawLine(startX, startY, x, y);
+  }
 
-    let curX;
-    let curY;
+  function drawLine(px1, py1, px2, py2) {
 
-    let fullSlope = 0;
-    if (x != startX && y != startY) fullSlope = (y - startY) / (x - startX);
-    else if (x == startX) fullSlope = y - startY;
-    else fullSlope = 0;
-    const x0 = Math.min(startX, x);
-    const x1 = Math.max(startX, x);
-    curY = (x0 == startX ? startY : y) + 0.5;
-    for (let i = x0; i <= x1; i += 1) {
-      curX = i;
-      curY += x0 == startX ? fullSlope : fullSlope;
-      context.fillStyle = canvasSettings.currentColor;
-      const drawX = curX * screenScaling;
-      for (let j = 0; j <= Math.abs(fullSlope); j++) {
-        const drawY = Math.floor(curY - j * Math.sign(fullSlope));
-        if (drawY >= Math.min(startY, y) && drawY <= Math.max(y, startY))
-          context.fillRect(
-            drawX * pixelSize,
-            drawY * screenScaling * pixelSize,
-            pixelSize * screenScaling,
-            pixelSize * screenScaling
-          );
-        else break;
+    const x0 = px1 + 0.5;
+    const x1 = px2 + 0.5;
+    const y0 = py1 + 0.5;
+    const y1 = py2 + 0.5;
+    
+    const isVertical = Math.floor(x0) == Math.floor(x1);
+    const slope = !isVertical ? (y1-y0)/(x1-x0) : 0;
+
+    context.fillStyle = canvasSettings.currentColor;
+    
+    if (Math.abs(slope) <= 1 && !isVertical) {
+      const idealPointFromX = (x) => {
+        return slope * (x - x0) + y0;
+      }
+      const xStep = x0 > x1 ? -1 : 1;
+
+      for (let i = x0; i*xStep <= x1*xStep; i+=xStep) {
+        // use center of pixel for line intersection
+        const idealY = idealPointFromX(i);
+        const drawX = Math.floor(i);
+        const drawY = Math.floor(idealY);
+        context.fillRect(
+          drawX * screenScaling * pixelSize,
+          drawY * screenScaling * pixelSize,
+          pixelSize * screenScaling,
+          pixelSize * screenScaling
+        );
+      }
+    } else {
+      const idealPointFromY = (y) => {
+        return !isVertical ? ((y - y0) / slope) + x0: x0 ;
+      }
+      const yStep = y0 < y1 ? 1 : -1;
+      
+      for (let i = y0; i*yStep <= y1*yStep ; i+= yStep) {
+        const idealX = idealPointFromY(i);
+        const drawX = Math.floor(idealX);
+        const drawY = Math.floor(i);
+        context.fillRect(
+          drawX * screenScaling * pixelSize,
+          drawY * screenScaling * pixelSize,
+          pixelSize * screenScaling,
+          pixelSize * screenScaling
+        );
       }
     }
   }
 
+  function drawLinePreview(event) {
+    if (!canvasSettings.isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    overlayContext.clearRect(0, 0, canvas.width, canvas.height);
+    const px2 = Math.floor((event.clientX - rect.left) / pixelSize);
+    const py2 = Math.floor((event.clientY - rect.top) / pixelSize);
+    const px1 = canvasSettings.brushStart[0];
+    const py1 = canvasSettings.brushStart[1];
+
+
+    const x0 = px1 + 0.5;
+    const x1 = px2 + 0.5;
+    const y0 = py1 + 0.5;
+    const y1 = py2 + 0.5;
+    
+    
+    const isVertical = Math.floor(x0) == Math.floor(x1);
+    const slope = !isVertical ? (y1-y0)/(x1-x0) : 0;
+
+    overlayContext.fillStyle = canvasSettings.currentColor;
+    
+    if (Math.abs(slope) <= 1 && !isVertical) {
+      const idealPointFromX = (x) => {
+        return slope * (x - x0) + y0;
+      }
+      const xStep = x0 > x1 ? -1 : 1;
+
+      for (let i = x0; i*xStep <= x1*xStep; i+=xStep) {
+        // use center of pixel for line intersection
+        const idealY = idealPointFromX(i);
+        const drawX = Math.floor(i);
+        const drawY = Math.floor(idealY);
+        overlayContext.fillRect(
+          drawX * screenScaling * pixelSize,
+          drawY * screenScaling * pixelSize,
+          pixelSize * screenScaling,
+          pixelSize * screenScaling
+        );
+      }
+    } else {
+      const idealPointFromY = (y) => {
+        return !isVertical ? ((y - y0) / slope) + x0: x0 ;
+      }
+      const yStep = y0 < y1 ? 1 : -1;
+      
+      for (let i = y0; i*yStep <= y1*yStep ; i+= yStep) {
+        const idealX = idealPointFromY(i);
+        const drawX = Math.floor(idealX);
+        const drawY = Math.floor(i);
+        overlayContext.fillRect(
+          drawX * screenScaling * pixelSize,
+          drawY * screenScaling * pixelSize,
+          pixelSize * screenScaling,
+          pixelSize * screenScaling
+        );
+      }
+    }
+  }
   /*
    ************************************************************
    */

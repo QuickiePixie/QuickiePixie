@@ -49,15 +49,32 @@
                 background-color: rgb(237, 237, 237);
                 cursor: pointer;
             }
-            #pixel-canvas {
-                border: 1px solid #ccc;
-                cursor: crosshair;
+
+            .overlay {
+                z-index: 10;
+            }
+
+            .pixel-grid-container {
+                width:100%;
+                height:auto;
+                margin:auto;
+                position: relative;
             }
 
             .pixel-grid {
                 width:100%;
                 height:auto;
                 margin:auto;
+                position: absolute;
+                top: 0;
+                left: 0;
+                border: 1px solid #ccc;
+                cursor: crosshair;
+            }
+
+            .pixel-grid:last-child {
+                display: hidden;
+                position: relative;
             }
 
             .icon {
@@ -210,8 +227,10 @@
                           </div>
                     </div>
             </div>
-            <div class="pixel-grid">
+            <div class="pixel-grid-container">
+                <canvas id="overlay-pixel-canvas" class="pixel-grid overlay" width="512" height="512"> </canvas>
                 <canvas id="pixel-canvas" class="pixel-grid" width="512" height="512"> </canvas>
+                <canvas id="base-pixel-canvas" class="pixel-grid" width="512" height="512"> </canvas>
             </div>
 
             <div class="row">
