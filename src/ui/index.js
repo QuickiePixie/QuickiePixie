@@ -45,8 +45,8 @@ addOnUISdk.ready.then(async () => {
     } else if (canvasSettings.brush == "erase") {
       canvasSettings.isErasing = true;
     }
-      canvasSettings.isDrawing = true;
-      drawPixel(event);
+    canvasSettings.isDrawing = true;
+    drawPixel(event);
   });
 
   canvas.addEventListener("mousemove", (event) => {
@@ -120,23 +120,23 @@ addOnUISdk.ready.then(async () => {
     console.log("stack", JSON.stringify(stack));
     const newColor = canvasSettings.currentColor;
 
-    while(stack.length > 0){
-        const [curX, curY] = stack.pop();
-        if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize) continue;
-        const currColor = colorPick(curX, curY);
-        if (colorMatch(currColor, prevColor)) {
-            context.fillStyle = newColor;
-            context.fillRect(
-                curX * pixelSize * screenScaling,
-                curY * pixelSize * screenScaling,
-                pixelSize * screenScaling,
-                pixelSize * screenScaling
-              );
-            stack.push([curX+1, curY]);
-            stack.push([curX-1, curY]);
-            stack.push([curX, curY+1]);
-            stack.push([curX, curY-1]);
-        }
+    while (stack.length > 0) {
+      const [curX, curY] = stack.pop();
+      if (curX < 0 || curX >= gridSize || curY < 0 || curY >= gridSize) continue;
+      const currColor = colorPick(curX, curY);
+      if (colorMatch(currColor, prevColor)) {
+        context.fillStyle = newColor;
+        context.fillRect(
+          curX * pixelSize * screenScaling,
+          curY * pixelSize * screenScaling,
+          pixelSize * screenScaling,
+          pixelSize * screenScaling
+        );
+        stack.push([curX + 1, curY]);
+        stack.push([curX - 1, curY]);
+        stack.push([curX, curY + 1]);
+        stack.push([curX, curY - 1]);
+      }
     }
   }
 
@@ -189,25 +189,25 @@ addOnUISdk.ready.then(async () => {
 
   const createDescriptionButton = document.getElementById("createDescription");
   const descriptionText = document.getElementById("descriptionText");
-    createDescriptionButton.addEventListener("click", async event => {
-        createDescriptionButton.disabled = true;
-        canvas.toBlob(async (imageBlob) => {
-            const formData = new FormData();
-            formData.append("image", imageBlob);
-            fetch(`https://imageanalyzer-be03.onrender.com/`, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    data = data.charAt(0).toUpperCase() + data.slice(1) + ".";
-                    descriptionText.innerHTML = data;
-                    descriptionText.hidden = false;
-                }).finally(() => {
-                  createDescriptionButton.disabled = false;
-                })        
-        }); 
+  createDescriptionButton.addEventListener("click", async event => {
+    createDescriptionButton.disabled = true;
+    canvas.toBlob(async (imageBlob) => {
+      const formData = new FormData();
+      formData.append("image", imageBlob);
+      fetch(`https://imageanalyzer-be03.onrender.com/`, {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => response.json())
+        .then(data => {
+          data = data.charAt(0).toUpperCase() + data.slice(1) + ".";
+          descriptionText.innerHTML = data;
+          descriptionText.hidden = false;
+        }).finally(() => {
+          createDescriptionButton.disabled = false;
+        })
     });
+  });
 
   const penButton = document.getElementById("penBtn");
   penButton.addEventListener("click", async (e) => {
@@ -288,41 +288,29 @@ addOnUISdk.ready.then(async () => {
     canvasSettings.currentColor = e.target.value;
   });
 
-    const createImageButton = document.getElementById("addToPage");
-    createImageButton.addEventListener("click", async () => {
-      const canvas = document.getElementById("pixel-canvas");
-      canvas.toBlob(async (imageBlob) => {
-        await sandboxProxy.createPixelImage(imageBlob);
-      });
+  const createImageButton = document.getElementById("addToPage");
+  createImageButton.addEventListener("click", async () => {
+    const canvas = document.getElementById("pixel-canvas");
+    canvas.toBlob(async (imageBlob) => {
+      await sandboxProxy.createPixelImage(imageBlob);
     });
-    createImageButton.disabled = false;
+  });
+  createImageButton.disabled = false;
 
-    
-    const downloadImageButton = document.getElementById("downloadImage");
-    downloadImageButton.addEventListener("click", async () => {
-      downloadImageButton.disabled=true;
-      const canvas = document.getElementById("pixel-canvas");
-      const link = document.createElement('a');
-      link.download = 'quickiepixie.png';
-      console.log("IN DOWNLOAD")
-      const formData = new FormData();
-      canvas.toBlob(async (imageBlob) => {
-        formData.append("image", imageBlob)
-        fetch(`https://imageanalyzer-be03.onrender.com/image`, {
-          method: "POST",
-          body: formData
-        }).then(res => res.json())
-        .then(data =>{
-          const id = data.id;
-          const elmt = document.getElementById("downloadText");
-          elmt.hidden=false;
-          downloadImageButton.classList.remove("visible");
-          elmt.innerText = `External Link: https://quickie-pixie-docs.vercel.app/image/${id}`;
-        }).finally(() => {
-          downloadImageButton.disabled=false;
-        })
-      });
-    });
-    downloadImageButton.disabled = false;
-    createDescriptionButton.disabled = false;
+
+  const downloadImageButton = document.getElementById("downloadImage");
+  downloadImageButton.addEventListener("click", async () => {
+    const canvas = document.getElementById("pixel-canvas");
+    const link = document.createElement('a');
+    link.download = 'quickiepixie.png';
+    canvas.toBlob(async (imageBlob) => {
+      const displaylink = document.createElement('a');
+      const url = URL.createObjectURL(imageBlob);
+      displaylink.href = url;
+      displaylink.download = "quickiepixie.png"
+      displaylink.click()
+    }, 'image/png');
+  });
+  downloadImageButton.disabled = false;
+  createDescriptionButton.disabled = false;
 });
