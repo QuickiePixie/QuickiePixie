@@ -17,7 +17,10 @@ const setInputMove = (b, f) => {
 const setInputEnd = (b, f) => {
     document.addEventListener("mouseup", getEventCoordinates(b, f));
     b.addEventListener("mouseup", getEventCoordinates(b, f));
-    //b.addEventListener("mouseleave", getEventCoordinates(b, f));
+}
+
+const setInputInterrupt = (b, f) => {
+    b.addEventListener("mouseleave", getEventCoordinates(b, f));
 }
 
 const setActive = (e) => {
@@ -64,6 +67,21 @@ const initToolSelect = (b) => {
         b.setTool(b.tools.ERASE);
     });
 
+      
+    const lineButton = document.getElementById("lineBtn");
+    lineButton.addEventListener("click", async (e) => {
+        setActive(lineButton);
+        // call erase tool
+        b.setTool(b.tools.LINE);
+    });
+
+    const bucketButton = document.getElementById("bucketBtn");
+    bucketButton.addEventListener("click", async (e) => {
+        setActive(bucketButton);
+        // call erase tool
+        b.setTool(b.tools.FILL);
+    });
+    
     
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.addEventListener("change", async (e) => {
@@ -78,5 +96,6 @@ export {
     setInputEnd,
     setInputMove,
     setInputStart,
+    setInputInterrupt,
     initToolSelect
 }
