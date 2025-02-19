@@ -89,6 +89,12 @@ const initToolSelect = (b) => {
         //call colour function
         b.setColour(convertToRgba(e.target.value));
     });
+
+    const sizeDropDown = document.getElementById("gridSize");
+    b.setSize(parseInt(sizeDropDown.value) ?? 8);
+    sizeDropDown.addEventListener("change", (event) => {
+      b.setSize(parseInt(event.target.value) ?? 8);
+    });
     
 }
 
