@@ -1,6 +1,7 @@
 import { setInputStart, setInputMove, setInputEnd, setInputInterrupt, initToolSelect } from "./input.mjs";
 import { Render } from "./render.mjs";
 import { initTools } from "./tools.mjs";
+import { PixelHistory } from "./pixelHistory.mjs";
 
 class QPPixelGrid {
 
@@ -57,17 +58,49 @@ class QPPixelGrid {
     
 }
 
+class QPPixelGridWithHistory extends QPPixelGrid {
+
+    constructor (width, height) {
+        super(width, height)
+        this.pixelHistory = new PixelHistory(this.pixels);
+    }
+
+    setPixels (pixels, r, g, b, a) {
+
+        pixels.forEach(([x, y]) => this.setPixel(x, y, r, g, b, a));
+    }
+    
+    clearPixels (pixels) {
+        pixels.forEach(([x, y]) => this.clearPixel(x, y)); 
+        this.pixelHistory.saveToUndoStack(pixels)
+    }
+
+    getPixelHistory () {
+        return this.pixelHistory;
+    }
+
+    resetPixels (pixels,r = 0, g = 0, b = 0, a = 0) {
+        console.log("resetting pixels", pixels, r, g, b, a)
+        this.pixels = new Uint8ClampedArray(pixels);
+    }
+}
+
 class QPCanvasLayer {
 
-    constructor(id="layer", elmt, width, height) {
+    constructor(id="layer", elmt, width, height, history) {
         this.id = id;
         this.width = width;
         this.height = height;
         this.canvas = elmt;
         this.canvas.width = width;
         this.canvas.height = height;
-        this.pixels = new QPPixelGrid(width, height);
         this.renderer = new Render(this.canvas);
+        this.hasHistory = history;
+        if (history) {
+            this.pixels = new QPPixelGridWithHistory(width, height);
+        } else {
+            this.pixels = new QPPixelGrid(width, height);
+        }
     }
 
     render () {
@@ -84,6 +117,13 @@ class QPCanvasLayer {
 
     getBlob () {
         return this.renderer.createBlob(this.getBitmap()); 
+    }
+
+    getHistory() {
+        if (this.hasHistory) {
+            return this.pixels.getPixelHistory()
+        }
+        return null;
     }
 
 }
@@ -105,8 +145,8 @@ class QPCanvas {
         this.layers.forEach(l => l.render());
     }
 
-    addLayer (id, elmt, i = 0) {
-        const l = new QPCanvasLayer(id, elmt, this.width, this.height);
+    addLayer (id, elmt, i = 0, pixelHistory) {
+        const l = new QPCanvasLayer(id, elmt, this.width, this.height, pixelHistory);
         this.layers.splice(i, 0, l);
         return l;
     }
@@ -168,13 +208,16 @@ export function QuickiePixie(){
 
 QuickiePixie.prototype.init = function () {
 
-    const inputLayer = this.canvas.addLayer("input", document.getElementById("overlay-pixel-canvas"), 0);
+    const inputLayer = this.canvas.addLayer("input", document.getElementById("overlay-pixel-canvas"), 0, false);
     const previewLayer = inputLayer;
-    const mainLayer = this.canvas.addLayer("layer1", document.getElementById("pixel-canvas"), 1);
+    const mainLayer = this.canvas.addLayer("layer1", document.getElementById("pixel-canvas"), 1, true);
     this.curLayer = mainLayer;
     this.previewLayer = previewLayer;
-    const exportLayer = this.canvas.addLayer("exportLayer", document.getElementById("base-pixel-canvas"), 2);
+    const exportLayer = this.canvas.addLayer("exportLayer", document.getElementById("base-pixel-canvas"), 2, false);
     this.exportLayer = exportLayer;
+
+    const undoButton = document.getElementById("undo");
+    const redoButton = document.getElementById("redo");
 
     this.tools = Object.freeze(initTools());
 
@@ -186,25 +229,63 @@ QuickiePixie.prototype.init = function () {
         return exportLayer.getBlob();
     }
 
+    this.undo = () => {
+       const pixels =  this.curLayer.getHistory().undo();
+       if (pixels != null) {
+        this.curLayer.pixels.resetPixels(pixels);
+        this.canvas.renderAll();
+       }
+       updateUndoRedoButtons();
+    }
+
+    this.redo = () => {
+        const pixels = this.curLayer.getHistory().redo();
+        // add  check for when redo is disabled
+        if (pixels == null) {
+            console.log("null pixels")
+        }
+        if (pixels != null) {
+        this.curLayer.pixels.resetPixels(pixels);
+         this.canvas.renderAll();
+        }
+        updateUndoRedoButtons();
+    }
+
+    const updateUndoRedoButtons = () => {
+        if (undoButton) undoButton.disabled = !this.enableUndoButton();
+        if (redoButton) redoButton.disabled = !this.enableRedoButton();
+    };
+
+    this.enableUndoButton = () => {
+        return this.curLayer.getHistory().undoStackEnabled();
+    }
+    this.enableRedoButton = () => {
+        return this.curLayer.getHistory().redoStackEnabled();
+    }
+
     // TODO: move this
     setInputStart(inputLayer.canvas, ((...a) => {
         this.settings.selectedTool.s(this, ...a);
         this.canvas.renderAll();
+        updateUndoRedoButtons();
     }).bind(this));
 
     setInputMove(inputLayer.canvas, ((...a) => {
         this.settings.selectedTool.m(this,...a);
         this.canvas.renderAll();
+        updateUndoRedoButtons();
     }).bind(this));
 
     setInputEnd(inputLayer.canvas, ((...a) => {
         this.settings.selectedTool.e(this,...a);
         this.canvas.renderAll();
+        updateUndoRedoButtons();
     }).bind(this));
 
     setInputInterrupt(inputLayer.canvas, ((...a) => {
         this.settings.selectedTool.i(this, ...a);
         this.canvas.renderAll();
+        updateUndoRedoButtons();
     }).bind(this));
 
     initToolSelect(this);

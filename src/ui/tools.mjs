@@ -122,7 +122,7 @@ const createFill = (context, x, y, rgb) => {
 
 const tools = {
     free: {
-        d: { isDrawing: false, latestPoint: null },
+        d: { isDrawing: false, latestPoint: null, pixelsedited: [] },
         s: function (c, x, y) {
             c.curLayer.pixels.setPixels(c.getSizedPixels(x, y), ...c.settings.colour);
             this.d.isDrawing = true;
@@ -139,9 +139,10 @@ const tools = {
             )) || c.curLayer.pixels.setPixels(c.getSizedPixels(x, y), ...c.settings.colour));//c.curLayer.pixels.setPixels(c.getSizedPixels(x, y), ...c.settings.colour) && 
             this.d.latestPoint = [x, y];
         },
-        e: function () {
+        e: function (c) {
             this.d.isDrawing = false;
             this.d.latestPoint = null;
+            c.curLayer.pixels.getPixelHistory().saveToUndoStack(c.curLayer.pixels.getPixels());
         },
         i: function () {
             this.d.latestPoint = null;
@@ -182,6 +183,7 @@ const tools = {
             );
             c.previewLayer.clearAll();
             this.d.isDrawing = false;
+            c.curLayer.pixels.getPixelHistory().saveToUndoStack(c.curLayer.pixels.getPixels())
         },
         init: function () {
             this.d.isDrawing = false;
@@ -207,9 +209,10 @@ const tools = {
             )) || c.curLayer.pixels.clearPixels(c.getSizedPixels(x,y)));
             this.d.latestPoint = [x, y];
         },
-        e: function () {
+        e: function (c) {
             this.d.isDrawing = false;
             this.d.latestPoint = null;
+            c.curLayer.pixels.getPixelHistory().saveToUndoStack(c.curLayer.pixels.getPixels())
         },
         init: function () {
             this.d.isDrawing = false;
@@ -223,6 +226,9 @@ const tools = {
         s: function(c,x,y) {
             createFill(c.curLayer, x, y, c.settings.colour);
         },
+        e: function (c) {
+            c.curLayer.pixels.getPixelHistory().saveToUndoStack(c.curLayer.pixels.getPixels())
+        }
     }
 }
 
