@@ -33,5 +33,18 @@ addOnUISdk.ready.then(async () => {
     });
     downloadImageButton.disabled = false;
 
+    const undoButton = document.getElementById("undo");
+    undoButton.disabled = true;
+    undoButton.addEventListener("click", async () => {
+        app.undo()
+    });
+
+    const redoButton = document.getElementById("redo");
+     redoButton.disabled = true;
+    redoButton.addEventListener("click", async () => {
+        app.redo()
+    });
+   
+
 })
 
