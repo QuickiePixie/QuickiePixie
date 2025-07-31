@@ -205,9 +205,6 @@ QuickiePixie.prototype.init = function () {
     const exportLayer = this.canvas.addLayer("exportLayer", document.getElementById("base-pixel-canvas"), 2, false);
     this.exportLayer = exportLayer;
 
-    const undoButton = document.getElementById("undo");
-    const redoButton = document.getElementById("redo");
-
     this.tools = Object.freeze(initTools());
 
     this.settings.selectedTool = this.tools.FREE;
@@ -217,6 +214,10 @@ QuickiePixie.prototype.init = function () {
         exportLayer.render();
         return exportLayer.getBlob();
     }
+
+    /* Undo/Redo button functionality */
+    const undoButton = document.getElementById("undo");
+    const redoButton = document.getElementById("redo");
 
     this.undo = () => {
        const pixels =  this.curLayer.getHistory().undo();
