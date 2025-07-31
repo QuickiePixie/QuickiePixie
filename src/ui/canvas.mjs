@@ -55,6 +55,10 @@ class QPPixelGrid {
     clearAll() {
         this.pixels.fill(0);
     }
+
+    resetPixels(pixels) {
+        this.pixels = new Uint8ClampedArray(pixels);
+    }
     
 }
 
@@ -66,22 +70,15 @@ class QPPixelGridWithHistory extends QPPixelGrid {
     }
 
     setPixels (pixels, r, g, b, a) {
-
         pixels.forEach(([x, y]) => this.setPixel(x, y, r, g, b, a));
     }
     
     clearPixels (pixels) {
         pixels.forEach(([x, y]) => this.clearPixel(x, y)); 
-        this.pixelHistory.saveToUndoStack(pixels)
     }
 
     getPixelHistory () {
         return this.pixelHistory;
-    }
-
-    resetPixels (pixels,r = 0, g = 0, b = 0, a = 0) {
-        console.log("resetting pixels", pixels, r, g, b, a)
-        this.pixels = new Uint8ClampedArray(pixels);
     }
 }
 

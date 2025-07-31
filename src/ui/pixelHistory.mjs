@@ -14,40 +14,15 @@ export class PixelHistory {
     }
 
     saveToUndoStack(pixels) {
-        // const pixelsCopy = new Uint8ClampedArray(pixels);
-        // console.log("pixels to save to undo stack", pixels)
-        // console.log("current undo stack", this.undoStack)
-        // // if (this.undoStack.undoStack[this.undoStack.length - 1] != pixels) {
-        // console.log("is this true?",  this.undoStack[this.undoStack.length - 1] !== pixels)
-        //     // if (this.undoStack.length === 0 || this.undoStack[this.undoStack.length - 1] !== pixels) {
-        //     if(this.undoStack.length === 0 ) {
-        // this.undoStack.push(pixels)
-        // this.redoStack = []
-        // // }
-        // console.log("saved to undo stack", pixels)
-        // // const imageData = pixels
-        // // for (let i = 0; i < imageData.length; i += 4) {
-        // //     console.log(`R: ${imageData[i]}, G: ${imageData[i + 1]}, B: ${imageData[i + 2]}, A: ${imageData[i + 3]}`);
-        // //   }
-        //     }
-        //     console.log("after undo stack", this.undoStack)
         const pixelsCopy = new Uint8ClampedArray(pixels);
-console.log("pixels copy", pixelsCopy)
-        console.log("is this condition true??", !this.arraysEqual(this.undoStack[this.undoStack.length - 1], pixelsCopy))
         // Check if the last saved state is different from the current state
         if (
             this.undoStack.length === 0 || 
             !this.arraysEqual(this.undoStack[this.undoStack.length - 1], pixelsCopy)
         ) {
             this.undoStack.push(pixelsCopy);
-            // this.redoStack = []; // Clear redo stack when a new state is saved
             this.clearRedoStack();
-            console.log("redo stack cleared?", this.redoStack)
-            console.log("saved to undo stack", pixelsCopy);
-            console.log("inside hereeee???????")
         }
-        console.log("length of redo stack", this.redoStack.length)
-        console.log("length of undo stack", this.undoStack.length)
     }
 
      // Helper function to compare two arrays
@@ -61,12 +36,10 @@ console.log("pixels copy", pixelsCopy)
     
     saveToRedoStack(pixels)  {
         this.redoStack.push(new Uint8ClampedArray(pixels))
-        console.log("saved to redo stack")
     }
 
     undo() {
         console.log("length of undo stack", this.undoStack.length)
-        // pop
         if (this.undoStack.length >= 2) {
            const currentPixels = this.undoStack.pop()
            this.saveToRedoStack(currentPixels)
