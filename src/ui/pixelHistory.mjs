@@ -39,38 +39,19 @@ export class PixelHistory {
     }
 
     undo() {
-        console.log("length of undo stack", this.undoStack.length)
         if (this.undoStack.length >= 2) {
            const currentPixels = this.undoStack.pop()
            this.saveToRedoStack(currentPixels)
-        //    if (this.undoStack.length == 0) {
-        //     return null
-        //     //need to set strting state
-        //    }
            return this.undoStack[this.undoStack.length - 1]
-                // return currentPixels;
         }
         return null
-
-        //add to redo
     }
 
     redo() {
-        console.log("length of redo stack", this.redoStack.length)
-       //pop
-       //if stack not empty
-    //    return this.redoStack[0]
-       //add to undo
     if (this.redoStack.length > 0) {
        const currentPixels = this.redoStack.pop()
        this.undoStack.push(currentPixels); // Push directly to undo stack
-        console.log("Redo performed, current pixels:", currentPixels);
         return currentPixels;
-    //    this.saveToUndoStack(currentPixels); // Use saveToUndoStack to ensure redo stack is cleared
-    //     return currentPixels;
-    //    this.saveToUndoStack(currentPixels)
-    // this.undoStack.push(currentPixels)
-    //    return currentPixels
     }
       return null
 

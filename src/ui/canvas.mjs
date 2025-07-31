@@ -237,10 +237,6 @@ QuickiePixie.prototype.init = function () {
 
     this.redo = () => {
         const pixels = this.curLayer.getHistory().redo();
-        // add  check for when redo is disabled
-        if (pixels == null) {
-            console.log("null pixels")
-        }
         if (pixels != null) {
         this.curLayer.pixels.resetPixels(pixels);
          this.canvas.renderAll();
