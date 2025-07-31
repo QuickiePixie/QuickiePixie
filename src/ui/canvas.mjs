@@ -66,15 +66,7 @@ class QPPixelGridWithHistory extends QPPixelGrid {
 
     constructor (width, height) {
         super(width, height)
-        this.pixelHistory = new PixelHistory(this.pixels);
-    }
-
-    setPixels (pixels, r, g, b, a) {
-        pixels.forEach(([x, y]) => this.setPixel(x, y, r, g, b, a));
-    }
-    
-    clearPixels (pixels) {
-        pixels.forEach(([x, y]) => this.clearPixel(x, y)); 
+        this.pixelHistory = new PixelHistory(new Uint8ClampedArray(this.pixels));
     }
 
     getPixelHistory () {
